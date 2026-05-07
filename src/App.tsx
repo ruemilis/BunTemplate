@@ -5,10 +5,38 @@ import { useAuth } from './context/AuthContext';
 import { AdvertisementCard } from './components/AdvertisementCard';
 import { Button } from './components/ui/button';
 import { Link } from 'react-router';
+import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function App() {
   const { ads } = useAds();
   const { user, logout } = useAuth();
+  const [posts, setPosts] = useState(null);
+  const [postTitle, setPostTitle] = useState('');
+
+  useEffect(() => {
+    fetch('/api/posts').then(res => res.json()).then(res => setPosts(res));
+  }, []);
+
+  async function createPost() {
+    const data = {
+      title: postTitle
+    };
+
+    const res = await fetch('api/post/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText}`);
+    }
+    return await res.json();  
+  }
 
   const handleLogout = () => {
     logout();
@@ -280,5 +308,6 @@ export function App() {
     </div>
   );
 }
+
 
 export default App;
